@@ -2,6 +2,20 @@
 
 Global Solution FIAP 2026/2 — tema **CitizenTech** — disciplina **Java Advanced**.
 
+## Integrantes
+
+| Nome | RM | Turma |
+|------|----|-------|
+| Andrei de Paiva Gibbini | 563061 | 2TDSPF |
+| Arthur Câmara | 562310 | 2TDSPG |
+| Diogo Cunha | 563654 | 2TDSPF |
+| Pedro Sakai Silva Zambaca | 565956 | 2TDSPF |
+| Pedro Santos Pequini | 561842 | 2TDSPF |
+
+Responsável por esta disciplina: **Arthur Câmara (RM 562310)**.
+
+---
+
 ## 1. Problema e solução
 
 Moradores de São Paulo convivem com problemas de zeladoria, mobilidade, iluminação e segurança. As reclamações se perdem em canais dispersos e não há transparência sobre **se** e **quando** a prefeitura responde.
@@ -300,7 +314,3 @@ Ferramentas de IA generativa foram usadas como apoio no desenvolvimento deste pr
 - Geração inicial da estrutura do projeto e de trechos de código
 - Revisão, correção de erros de compilação e criação de testes
 - Escrita e revisão desta documentação
-
-## Integrante responsável
-
-Arthur Câmara — RM 562310 — turma 2TDSPG
