@@ -288,17 +288,19 @@ Outros códigos: `401` sem token/token inválido, `403` papel ou dono incorreto,
 - **CORS** liberado (sem cookies; autenticação por header).
 - **Health** não depende do RabbitMQ (`management.health.rabbit.enabled=false`), para que a indisponibilidade do broker não derrube a aplicação no deploy.
 
-## 10. Deploy
+## 10. Declaração de uso de IA generativa
 
-Link do deploy: **`<preencher com a URL do deploy>`**
-Swagger em produção: `<URL>/swagger-ui.html`
+Ferramentas de IA generativa foram usadas como apoio no desenvolvimento deste projeto. Todo o código foi lido, revisado, compilado e testado pelo responsável, que responde pelo conteúdo entregue.
 
-## 11. Declaração de uso de IA generativa
+**Ferramentas utilizadas:** Claude (Anthropic), pelo chat e pelo Claude Code.
 
-> **[Placeholder — o grupo deve revisar e completar este texto.]**
->
-> Ferramentas de IA generativa foram usadas como **apoio** no desenvolvimento deste projeto (por exemplo: geração inicial de trechos de código, revisão, documentação e testes). Todo o código foi **lido, revisado, compilado e testado** pelos integrantes do grupo, que se responsabilizam pelo conteúdo entregue.
->
-> Ferramentas utilizadas: `<listar>`
-> Partes em que foram usadas: `<listar>`
-> Integrantes: `<nome — RM>`
+**Partes em que foram usadas:**
+
+- Discussão da ideia da solução e da divisão entre as disciplinas
+- Geração inicial da estrutura do projeto e de trechos de código
+- Revisão, correção de erros de compilação e criação de testes
+- Escrita e revisão desta documentação
+
+## Integrante responsável
+
+Arthur Câmara — RM 562310 — turma 2TDSPG
