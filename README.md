@@ -31,7 +31,7 @@ O **Voz do Bairro** organiza essa participação:
 
 ODS relacionados: 11 (cidades sustentáveis), 10 (redução das desigualdades) e 16 (instituições eficazes e transparentes).
 
-Esta API Java é dona de: autenticação/cadastro, usuários, propostas, respostas, notificações, placar, Spring AI e RabbitMQ. A API .NET é dona de bairros (CRUD), comentários e apoios. As duas usam o **mesmo banco PostgreSQL** e o **mesmo JWT** (contrato em `CONTRATO.md` do grupo). Esta é a API implantada na Azure (disciplina de DevOps).
+Esta API Java é dona de: autenticação/cadastro, usuários, propostas, respostas, notificações, placar, Spring AI e RabbitMQ. A API .NET é dona de bairros (CRUD), comentários e apoios. As duas usam o **mesmo banco PostgreSQL** e o **mesmo JWT** (contrato em `CONTRATO.md` do grupo). As duas APIs estão publicadas no Render (veja a seção Deploy).
 
 ## 2. Arquitetura
 
@@ -313,7 +313,18 @@ Outros códigos: `401` sem token/token inválido, `403` papel ou dono incorreto,
 - **CORS** liberado (sem cookies; autenticação por header).
 - **Health** não depende do RabbitMQ (`management.health.rabbit.enabled=false`), para que a indisponibilidade do broker não derrube a aplicação no deploy.
 
-## 10. Declaração de uso de IA generativa
+## 10. Deploy
+
+As duas APIs estão publicadas no Render (plano free), com PostgreSQL gerenciado e RabbitMQ no CloudAMQP. A configuração está no `render.yaml` da raiz do repositório Java.
+
+| API | URL | Swagger | Health |
+|---|---|---|---|
+| Java | https://voz-do-bairro-java.onrender.com | https://voz-do-bairro-java.onrender.com/swagger-ui.html | https://voz-do-bairro-java.onrender.com/actuator/health |
+| .NET | https://voz-do-bairro-dotnet.onrender.com | https://voz-do-bairro-dotnet.onrender.com/swagger | https://voz-do-bairro-dotnet.onrender.com/health |
+
+No plano free os serviços hibernam após 15 minutos sem uso; a primeira requisição depois disso pode levar cerca de 1 minuto.
+
+## 11. Declaração de uso de IA generativa
 
 Ferramentas de IA generativa foram usadas como apoio no desenvolvimento deste projeto. Todo o código foi lido, revisado, compilado e testado pelo responsável, que responde pelo conteúdo entregue.
 
