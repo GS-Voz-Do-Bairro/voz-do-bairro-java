@@ -1,0 +1,53 @@
+# Render Blueprint - Voz do Bairro (GS FIAP 2026/2)
+# Sobe as duas APIs no plano free: Java (este repositório) e .NET (repositório voz-do-bairro-dotnet).
+# Valores marcados com "sync: false" são pedidos pelo Render na criação (senhas não ficam no repositório).
+
+services:
+  - type: web
+    name: voz-do-bairro-java
+    runtime: docker
+    plan: free
+    region: virginia
+    repo: https://github.com/GS-Voz-Do-Bairro/voz-do-bairro-java
+    branch: main
+    dockerfilePath: ./dockerfiles/Dockerfile.java
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: JAVA_OPTS
+        value: "-Xmx300m -Xss512k -XX:MaxMetaspaceSize=150m -XX:+UseSerialGC -Duser.timezone=UTC"
+      - key: DB_URL
+        value: jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: RABBITMQ_URL
+        sync: false
+
+  - type: web
+    name: voz-do-bairro-dotnet
+    runtime: docker
+    plan: free
+    region: virginia
+    repo: https://github.com/GS-Voz-Do-Bairro/voz-do-bairro-dotnet
+    branch: main
+    dockerfilePath: ./dockerfiles/Dockerfile.dotnet
+    dockerContext: .
+    healthCheckPath: /health/live
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: ConnectionStrings__Default
+        sync: false
+      - key: JWT_SECRET
+        fromService:
+          type: web
+          name: voz-do-bairro-java
+          envVarKey: JWT_SECRET
+      - key: RABBITMQ_URL
+        sync: false
