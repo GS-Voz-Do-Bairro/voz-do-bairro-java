@@ -27,6 +27,6 @@ USER app
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75 -Duser.timezone=UTC"
 EXPOSE 8080
 
-# Variaveis obrigatorias em tempo de execucao: DB_URL, DB_USER, DB_PASSWORD, JWT_SECRET.
+# Variaveis obrigatorias em tempo de execucao: DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD (ou DB_URL), JWT_SECRET.
 # Opcionais: RABBITMQ_URL, OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL, CORS_ALLOWED_ORIGINS, PORT.
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /app/app.jar"]

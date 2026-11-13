@@ -31,7 +31,7 @@ O **Voz do Bairro** organiza essa participação:
 
 ODS relacionados: 11 (cidades sustentáveis), 10 (redução das desigualdades) e 16 (instituições eficazes e transparentes).
 
-Esta API Java é dona de: autenticação/cadastro, usuários, propostas, respostas, notificações, placar, Spring AI e RabbitMQ. A API .NET é dona de bairros (CRUD), comentários e apoios. As duas usam o **mesmo banco Oracle** e o **mesmo JWT** (contrato em `CONTRATO.md` do grupo). Esta é a API implantada na Azure (disciplina de DevOps).
+Esta API Java é dona de: autenticação/cadastro, usuários, propostas, respostas, notificações, placar, Spring AI e RabbitMQ. A API .NET é dona de bairros (CRUD), comentários e apoios. As duas usam o **mesmo banco PostgreSQL** e o **mesmo JWT** (contrato em `CONTRATO.md` do grupo). Esta é a API implantada na Azure (disciplina de DevOps).
 
 ## 2. Arquitetura
 
@@ -52,7 +52,7 @@ flowchart LR
         NC["Bairros, comentários,<br/>apoios, login"]
     end
 
-    DB[("Oracle 19c<br/>VB_*")]
+    DB[("PostgreSQL<br/>VB_*")]
     MQ{{"RabbitMQ<br/>exchange topic<br/>vozdobairro.events"}}
     LLM["LLM compatível<br/>com OpenAI<br/>(OpenAI / Groq)"]
 
@@ -128,11 +128,17 @@ Proteções: o conteúdo dos usuários vai delimitado e o prompt de sistema mand
 
 - **JDK 21** (`java -version`). Não precisa instalar o Maven: use o wrapper `mvnw`.
 - **Docker** (para o RabbitMQ local).
-- Acesso ao Oracle da FIAP (o schema vem do script `banco/script-bd-base.sql`).
+- Um PostgreSQL 14+ (local ou o do Render). O schema e os dados de teste são criados pela própria API.
 
-### 5.1 Banco Oracle
+### 5.1 Banco PostgreSQL
 
-Rode uma única vez o script `banco/script-bd-base.sql` no seu schema Oracle (SQL Developer → abrir o arquivo → *Executar Script* / F5). Ele cria as tabelas `VB_*` e os usuários de teste. A API **não** cria tabelas (`ddl-auto=none`).
+As APIs Java e .NET usam **PostgreSQL** (no Render o Oracle da FIAP não é acessível). O **Oracle continua sendo a entrega da disciplina de banco** (`voz-do-bairro-banco`) e o script `banco/script-bd-base.sql` fica como referência do contrato.
+
+Não há nada para rodar à mão: na subida a API executa `src/main/resources/schema.sql` (`CREATE TABLE IF NOT EXISTS`, identificadores `"VB_*"` entre aspas e em maiúsculas) e `data.sql` (usuários e propostas de teste, sem duplicar). O Hibernate **não** cria tabelas (`ddl-auto=none`). Só precisa existir um banco vazio, por exemplo:
+
+```bash
+docker run -d --name vozdobairro-pg -p 5432:5432 -e POSTGRES_USER=vozdobairro -e POSTGRES_PASSWORD=sua-senha -e POSTGRES_DB=vozdobairro postgres:16
+```
 
 ### 5.2 RabbitMQ local
 
@@ -145,9 +151,12 @@ Painel em http://localhost:15672 (guest/guest). A exchange e as 3 filas são cri
 
 | Variável | Obrigatória | Exemplo / padrão |
 |---|---|---|
-| `DB_URL` | sim | `jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL` |
-| `DB_USER` | sim | `rm000000` |
+| `DB_HOST` | sim* | `localhost` (no Render vem do banco, via `fromDatabase`) |
+| `DB_PORT` | não | `5432` |
+| `DB_NAME` | sim* | `vozdobairro` |
+| `DB_USER` | sim | `vozdobairro` |
 | `DB_PASSWORD` | sim | sua senha |
+| `DB_URL` | não | URL JDBC pronta (`jdbc:postgresql://host:5432/banco`); se definida, substitui `DB_HOST`/`DB_PORT`/`DB_NAME` |
 | `JWT_SECRET` | sim | mínimo **32 caracteres**; **o mesmo valor da API .NET** |
 | `RABBITMQ_URL` | não | `amqp://guest:guest@localhost:5672` (CloudAMQP: `amqps://user:pass@host/vhost`) |
 | `OPENAI_API_KEY` | não | sem ela, a IA usa o fallback |
@@ -159,8 +168,9 @@ Painel em http://localhost:15672 (guest/guest). A exchange e as 3 filas são cri
 
 Linux / macOS / Git Bash:
 ```bash
-export DB_URL="jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL"
-export DB_USER="rm000000"
+export DB_HOST="localhost"
+export DB_NAME="vozdobairro"
+export DB_USER="vozdobairro"
 export DB_PASSWORD="sua-senha"
 export JWT_SECRET="um-segredo-compartilhado-com-pelo-menos-32-chars"
 export OPENAI_API_KEY="sk-..."      # opcional
@@ -169,8 +179,9 @@ export OPENAI_API_KEY="sk-..."      # opcional
 
 Windows (PowerShell):
 ```powershell
-$env:DB_URL="jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL"
-$env:DB_USER="rm000000"
+$env:DB_HOST="localhost"
+$env:DB_NAME="vozdobairro"
+$env:DB_USER="vozdobairro"
 $env:DB_PASSWORD="sua-senha"
 $env:JWT_SECRET="um-segredo-compartilhado-com-pelo-menos-32-chars"
 $env:OPENAI_API_KEY="sk-..."        # opcional
@@ -187,14 +198,14 @@ API em http://localhost:8080 — Swagger em **http://localhost:8080/swagger-ui.h
 ```bash
 ./mvnw test
 ```
-Os testes usam o perfil `test` (H2 em modo Oracle, schema criado pelo Hibernate, RabbitTemplate mockado, IA desligada). Não precisam de Oracle, RabbitMQ nem chave de LLM.
+Os testes usam o perfil `test` (H2 em memória, schema criado pelo Hibernate, `schema.sql`/`data.sql` desligados, RabbitTemplate mockado, IA desligada). Não precisam de PostgreSQL, RabbitMQ nem chave de LLM.
 
 ### 5.5 Docker
 
 ```bash
 docker build -f dockerfiles/Dockerfile.java -t voz-do-bairro-java .
 docker run --rm -p 8080:8080 \
-  -e DB_URL=... -e DB_USER=... -e DB_PASSWORD=... -e JWT_SECRET=... \
+  -e DB_HOST=... -e DB_NAME=... -e DB_USER=... -e DB_PASSWORD=... -e JWT_SECRET=... \
   -e RABBITMQ_URL=amqp://guest:guest@host.docker.internal:5672 \
   voz-do-bairro-java
 ```
@@ -296,7 +307,7 @@ Outros códigos: `401` sem token/token inválido, `403` papel ou dono incorreto,
 - **Senhas** com BCrypt `$2a$` custo 10.
 - **Escrita concorrente com o .NET**: `Proposta` usa `@DynamicUpdate` e as colunas que o .NET mantém (`TOTAL_APOIOS`, `DT_VIROU_DEMANDA`, `PRAZO_RESPOSTA`) são somente leitura no Java; `RESUMO_IA` e `ATRASADA` são gravados por `UPDATE` pontual. Assim o Java nunca sobrescreve um apoio registrado pelo .NET.
 - **Datas** gravadas em UTC; a API devolve ISO-8601 com `Z`.
-- **`LIDA NUMBER(1)`** mapeado com `AttributeConverter<Boolean, Integer>` (funciona igual no Oracle e no H2).
+- **`LIDA NUMBER(1)`** mapeado com `AttributeConverter<Boolean, Integer>` (funciona igual no PostgreSQL e no H2).
 - **Tipo da notificação** codificado como prefixo da mensagem (ex.: `[Meta atingida] ...`), já que `VB_NOTIFICACAO` não tem coluna de tipo; isso viabiliza a idempotência sem alterar o schema.
 - **Paginação** devolvida num envelope próprio (`PaginaResponse`) estável para o app Mobile.
 - **CORS** liberado (sem cookies; autenticação por header).

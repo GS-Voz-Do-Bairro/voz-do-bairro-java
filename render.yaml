@@ -2,6 +2,15 @@
 # Sobe as duas APIs no plano free: Java (este repositório) e .NET (repositório voz-do-bairro-dotnet).
 # Valores marcados com "sync: false" são pedidos pelo Render na criação (senhas não ficam no repositório).
 
+# Banco PostgreSQL compartilhado pelas duas APIs (o Oracle da FIAP nao e acessivel a partir do Render).
+# O schema e o seed sao criados pela API Java na subida (schema.sql / data.sql).
+databases:
+  - name: voz-do-bairro-db
+    plan: free
+    region: virginia
+    databaseName: vozdobairro
+    user: vozdobairro
+
 services:
   - type: web
     name: voz-do-bairro-java
@@ -18,12 +27,26 @@ services:
         value: "8080"
       - key: JAVA_OPTS
         value: "-Xmx300m -Xss512k -XX:MaxMetaspaceSize=150m -XX:+UseSerialGC -Duser.timezone=UTC"
-      - key: DB_URL
-        value: jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL
+      - key: DB_HOST
+        fromDatabase:
+          name: voz-do-bairro-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: voz-do-bairro-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: voz-do-bairro-db
+          property: database
       - key: DB_USER
-        sync: false
+        fromDatabase:
+          name: voz-do-bairro-db
+          property: user
       - key: DB_PASSWORD
-        sync: false
+        fromDatabase:
+          name: voz-do-bairro-db
+          property: password
       - key: JWT_SECRET
         generateValue: true
       - key: RABBITMQ_URL
@@ -42,8 +65,26 @@ services:
     envVars:
       - key: PORT
         value: "8080"
-      - key: ConnectionStrings__Default
-        sync: false
+      - key: DB_HOST
+        fromDatabase:
+          name: voz-do-bairro-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: voz-do-bairro-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: voz-do-bairro-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: voz-do-bairro-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: voz-do-bairro-db
+          property: password
       - key: JWT_SECRET
         fromService:
           type: web
